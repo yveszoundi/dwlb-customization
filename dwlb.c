@@ -141,6 +141,7 @@ struct Bar {
 	uint32_t last_layout_idx;
 	char title[1024];
 	char status[1024];
+	char ltsymbol[16];
 	
 	StatusColor *status_colors;
 	uint32_t status_colors_l, status_colors_c;
@@ -418,7 +419,7 @@ draw_frame(Bar *bar)
 			      bar->width, bar->height, bar->textpadding, NULL, 0);
 	}
 	
-	x = draw_text(bar->layout, x, y, foreground, background,
+	x = draw_text(bar->ltsymbol, x, y, foreground, background,
 		      &inactive_fg_color, &inactive_bg_color, bar->width,
 		      bar->height, bar->textpadding, NULL, 0);
 	
@@ -818,6 +819,18 @@ dwl_wm_monitor_title(void *data, struct znet_tapesoftware_dwl_wm_monitor_v1 *dwl
 		bar->redraw = true;
 	}
 }
+ 
+static void
+dwl_wm_monitor_ltsymbol(void *data, struct znet_tapesoftware_dwl_wm_monitor_v1 *dwl_wm_monitor,
+		     const char *ltsymbol)
+{
+	Bar *bar = (Bar *)data;
+	
+	if (strcmp(bar->ltsymbol, ltsymbol) != 0) {
+		snprintf(bar->ltsymbol, sizeof bar->ltsymbol, "%s", ltsymbol);
+		bar->redraw = true;
+	}
+}
 
 static void
 dwl_wm_monitor_frame(void *data, struct znet_tapesoftware_dwl_wm_monitor_v1 *dwl_wm_monitor)
@@ -828,6 +841,7 @@ static const struct znet_tapesoftware_dwl_wm_monitor_v1_listener dwl_wm_monitor_
 	.selected = dwl_wm_monitor_selected,
 	.tag = dwl_wm_monitor_tag,
 	.layout = dwl_wm_monitor_layout,
+	.ltsymbol = dwl_wm_monitor_ltsymbol,
 	.title = dwl_wm_monitor_title,
 	.frame = dwl_wm_monitor_frame
 };
@@ -874,8 +888,10 @@ setup_bar(Bar *bar)
 	bar->bottom = bottom;
 	bar->hidden = hidden;
 
-	if (!ipc)
+	if (!ipc) {
 		snprintf(bar->layout, sizeof bar->layout, "[]=");
+		snprintf(bar->ltsymbol, sizeof bar->ltsymbol, "[]=");
+	}
 		
 	bar->xdg_output = zxdg_output_manager_v1_get_xdg_output(output_manager, bar->wl_output);
 	if (!bar->xdg_output)
