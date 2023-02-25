@@ -7,7 +7,7 @@ static bool bottom = false;
 static bool hide_vacant = false;
 
 // font
-static char *fontstr = "monospace:size=14";
+static char *fontstr = "monospace:size=10";
 
 // tag names if ipc is disabled
 static char *tags_noipc[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
